@@ -1,0 +1,25 @@
+Total number of samples in dataset: 600
+C:\Users\wbott\.conda\envs\myenv\lib\site-packages\torchvision\models\_utils.py:208: UserWarning: The parameter 'pretrained' is deprecated since 0.13 and may be removed in the future, please use 'weights' instead.
+  warnings.warn(
+C:\Users\wbott\.conda\envs\myenv\lib\site-packages\torchvision\models\_utils.py:223: UserWarning: Arguments other than a weight enum or `None` for 'weights' are deprecated since 0.13 and may be removed in the future. The current behavior is equivalent to passing `weights=FasterRCNN_ResNet50_FPN_Weights.COCO_V1`. You can also use `weights=FasterRCNN_ResNet50_FPN_Weights.DEFAULT` to get the most up-to-date weights.
+  warnings.warn(msg)
+Epoch 1
+Epoch [1/10], Loss: 0.6074
+Epoch 2
+Epoch [2/10], Loss: 0.4844
+Epoch 3
+Epoch [3/10], Loss: 0.4529
+Epoch 4
+Epoch [4/10], Loss: 0.3875
+Epoch 5
+Epoch [5/10], Loss: 0.4584
+Epoch 6
+Epoch [6/10], Loss: 0.3883
+Epoch 7
+Epoch [7/10], Loss: 0.3650
+Epoch 8
+Epoch [8/10], Loss: 0.3523
+Epoch 9
+Epoch [9/10], Loss: 0.2859
+Epoch 10
+Epoch [10/10], Loss: 0.2967
