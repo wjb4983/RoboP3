@@ -101,7 +101,7 @@ class Market1501Dataset(Dataset):
         return img1, img2, label
 
 
-def train_siamese_network(model, dataloader, criterion, optimizer, epochs=10):
+def train_siamese_network(model, dataloader, criterion, optimizer, epochs=10, save_path='siamese_model.pth'):
     model.train()
     for epoch in range(epochs):
         total_loss = 0
@@ -115,6 +115,7 @@ def train_siamese_network(model, dataloader, criterion, optimizer, epochs=10):
             total_loss += loss.item()
 
         print(f'Epoch [{epoch + 1}/{epochs}], Loss: {total_loss / len(dataloader):.4f}')
+        torch.save(model.state_dict(), save_path)
 
 
 if __name__ == '__main__':
