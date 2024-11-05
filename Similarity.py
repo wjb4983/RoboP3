@@ -7,7 +7,7 @@ class SimilarityNetwork(nn.Module):
         super(SimilarityNetwork, self).__init__()
         self.conv1 = nn.Conv2d(6, 32, kernel_size=3, stride=1, padding=1)  # Input: 2x3xHxW -> 1x32xHxW
         self.conv2 = nn.Conv2d(32, 64, kernel_size=3, stride=1, padding=1)  # 32xHxW -> 64xHxW
-        self.fc1 = nn.Linear(64 * 1080 * 1920 // 4 // 4, 256)  # Adjust size based on pooling
+        self.fc1 = nn.Linear(2073600, 256)  # Adjust size based on pooling
         self.fc2 = nn.Linear(256, 1)  # Output: Similarity score
 
     def forward(self, img1, img2):
