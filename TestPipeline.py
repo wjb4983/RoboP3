@@ -293,6 +293,7 @@ def process_video_and_save_gif(
     previous_embedding = None  # Initialize the previous embedding for tracking
     prev_box = None  # Initialize the previous bounding box for spatial reference
     frames = []  # List to store frames for the GIF
+    last_frame_detected = 0
 
     frame_count = 0
     while True:
@@ -344,6 +345,9 @@ def process_video_and_save_gif(
                     prev_x_min, prev_y_min, prev_x_max, prev_y_max = prev_box
                     spatial_distance = ((x_min - prev_x_min) ** 2 + (y_min - prev_y_min) ** 2) ** 0.5
 
+                    # Temporal score
+                    distance_score = distance_score + ((frame_count - last_frame_detected) * 0.05)
+
                     # Choose the box with the lowest distance that is spatially close and below the threshold
                     if distance_score < best_match_score and distance_score < similarity_threshold and spatial_distance < spatial_threshold:
                         best_match_score = distance_score
@@ -354,6 +358,7 @@ def process_video_and_save_gif(
                 previous_embedding = triplet_model.forward_once(current_images[best_match_index])
                 prev_box = current_bboxes[best_match_index]
                 selected_box = current_bboxes[best_match_index]
+                last_frame_detected = frame_count
 
                 x_min, y_min, x_max, y_max = map(int, selected_box)
                 ax.add_patch(
@@ -446,5 +451,5 @@ video_path = r"../MOT16-01-raw.webm"
 
 # Visualize predictions on a few images
 # visualize_predictions_with_tracking_to_gif(model, dataset, num_images=600, device=device, siamese_model=siam_model)
-process_video_and_save_gif(video_path, model, siam_model, device=device, similarity_threshold=0.5, spatial_threshold=25, gif_filename="tracking_output.gif")
+process_video_and_save_gif(video_path, model, siam_model, device=device, similarity_threshold=0.3, spatial_threshold=25, gif_filename="tracking_output.gif")
 
