@@ -16,9 +16,9 @@ class SiameseNetwork(nn.Module):
         self.conv1 = nn.Conv2d(3, 64, kernel_size=3, padding=1)
         self.conv2 = nn.Conv2d(64, 128, kernel_size=3, padding=1)
         self.conv3 = nn.Conv2d(128, 128, kernel_size=3, padding=1)
-        self.adaptive_pool = nn.AdaptiveAvgPool2d((64, 64))
-        self.fc1 = nn.Linear(524288, 256)  # Updated dimensions after pooling layers
-        self.fc2 = nn.Linear(256, 128)
+        self.adaptive_pool = nn.AdaptiveAvgPool2d((16, 16))
+        self.fc1 = nn.Linear(128 * 16 * 16, 256)  # Updated dimensions after pooling layers
+        self.fc2 = nn.Linear(256, 512)
 
     def forward_once(self, x):
         x = F.relu(F.max_pool2d(self.conv1(x), 2))
@@ -45,19 +45,17 @@ class SiameseNetwork(nn.Module):
 #         loss = torch.mean(label * euclidean_distance ** 2 +
 #                           (1 - label) * torch.clamp(self.margin - euclidean_distance, min=0.0) ** 2)
 #         return loss
-class ContrastiveLoss(torch.nn.Module):
-
-    def __init__(self, margin=2.0):
+class ContrastiveLoss(nn.Module):
+    def __init__(self, margin=1.0):
         super(ContrastiveLoss, self).__init__()
         self.margin = margin
 
     def forward(self, output1, output2, label):
         euclidean_distance = F.pairwise_distance(output1, output2)
-        pos = (1-label) * torch.pow(euclidean_distance, 2)
-        neg = (label) * torch.pow(torch.clamp(self.margin - euclidean_distance, min=0.0), 2)
-        loss_contrastive = torch.mean( pos + neg )
-        return loss_contrastive
-
+        # For positive pairs (label=0), minimize distance; for negative pairs (label=1), push apart by margin
+        loss = torch.mean((1 - label) * torch.pow(euclidean_distance, 2) +
+                          label * torch.pow(torch.clamp(self.margin - euclidean_distance, min=0.0), 2))
+        return loss
 
 class Market1501Dataset(Dataset):
     def __init__(self, folder_path, transform=None):
@@ -81,22 +79,21 @@ class Market1501Dataset(Dataset):
         image_pairs = []
         person_ids = list(self.id_to_images.keys())
 
-        # Create positive and negative pairs
+        # Create positive pairs (same ID)
         for person_id in person_ids:
             images = self.id_to_images[person_id]
-            # Create positive pairs (same ID)
             if len(images) > 1:
                 for i in range(len(images) - 1):
                     for j in range(i + 1, len(images)):
-                        image_pairs.append((images[i], images[j], 1))  # Label 1 for positive pairs
-        print(len(image_pairs))
+                        image_pairs.append((images[i], images[j], 0))  # Label 0 for positive pairs
+
         # Create negative pairs (different IDs)
         for i in range(len(person_ids)):
             for j in range(i + 1, len(person_ids)):
                 img1 = random.choice(self.id_to_images[person_ids[i]])
                 img2 = random.choice(self.id_to_images[person_ids[j]])
-                image_pairs.append((img1, img2, 0))  # Label 0 for negative pairs
-        print(len(image_pairs))
+                image_pairs.append((img1, img2, 1))  # Label 1 for negative pairs
+
         return image_pairs
 
     def __len__(self):
@@ -135,22 +132,21 @@ def train_siamese_network(model, dataloader, criterion, optimizer, epochs=10, sa
 if __name__ == '__main__':
     # Define transformations
     transform = transforms.Compose([
-        transforms.RandomResizedCrop((128, 128), scale=(0.7, 3.0), ratio=(0.75, 1.33)),  # Random scaling and aspect ratio
-        transforms.RandomHorizontalFlip(p=0.5),  # Random horizontal flip with a 50% probability
-        transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.1),  # Random color adjustments
+        transforms.Resize((128, 128)),
         transforms.ToTensor(),
         transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])
     ])
 
     # Load Market-1501 dataset
-    dataset_path = r"C:\Users\wbott\Downloads\archive\Market-1501-v15.09.15\bounding_box_train" # Update with the correct path
+    dataset_path = r"..\Market-1501-v15.09.15\bounding_box_train" # Update with the correct path
     dataset = Market1501Dataset(dataset_path, transform=transform)
     dataloader = DataLoader(dataset, batch_size=50, shuffle=True)
 
     # Initialize model, loss, and optimizer
+
     model = SiameseNetwork().cuda()
     criterion = ContrastiveLoss()
     optimizer = optim.Adam(model.parameters(), lr=0.001)
 
     # Train the model
-    train_siamese_network(model, dataloader, criterion, optimizer, epochs=1)
+    train_siamese_network(model, dataloader, criterion, optimizer, epochs=10)
