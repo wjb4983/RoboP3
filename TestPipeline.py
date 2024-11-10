@@ -273,7 +273,7 @@ def visualize_predictions_with_tracking_to_gif(
 
 
 def process_video_and_save_gif(
-    video_path, model, triplet_model, device='cpu', similarity_threshold=0.05, spatial_threshold=25, gif_filename="tracking_output.gif"
+    video_path, model, contrastive_model, device='cpu', similarity_threshold=0.05, spatial_threshold=25, gif_filename="tracking_output.gif"
 ):
     # Initialize video capture
     cap = cv2.VideoCapture(video_path)
@@ -288,7 +288,7 @@ def process_video_and_save_gif(
     ])
 
     model.eval()  # Set the Faster R-CNN model to evaluation mode
-    triplet_model.eval()  # Set the Triplet model to evaluation mode
+    contrastive_model.eval()  # Set the contrastive_model to evaluation mode
 
     previous_embedding = None  # Initialize the previous embedding for tracking
     prev_box = None  # Initialize the previous bounding box for spatial reference
@@ -334,7 +334,7 @@ def process_video_and_save_gif(
             best_match_index = -1
 
             for idx, current_image in enumerate(current_images):
-                current_embedding = triplet_model.forward_once(current_image)
+                current_embedding = contrastive_model.forward_once(current_image)
 
                 # Calculate Euclidean distance with the previous embedding
                 distance_score = torch.dist(previous_embedding, current_embedding).item()
@@ -355,7 +355,7 @@ def process_video_and_save_gif(
 
             if best_match_index != -1:
                 # Update previous embedding and bounding box with the best match
-                previous_embedding = triplet_model.forward_once(current_images[best_match_index])
+                previous_embedding = contrastive_model.forward_once(current_images[best_match_index])
                 prev_box = current_bboxes[best_match_index]
                 selected_box = current_bboxes[best_match_index]
                 last_frame_detected = frame_count
@@ -383,7 +383,7 @@ def process_video_and_save_gif(
         else:
             # Initialize tracking on the first frame or when no match is found
             if len(current_bboxes) > 0:
-                previous_embedding = triplet_model.forward_once(current_images[0])
+                previous_embedding = contrastive_model.forward_once(current_images[0])
                 prev_box = current_bboxes[0]
                 selected_box = current_bboxes[0]
 
