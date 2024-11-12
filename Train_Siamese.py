@@ -17,7 +17,7 @@ class SiameseNetwork(nn.Module):
         self.conv2 = nn.Conv2d(64, 128, kernel_size=3, padding=1)
         self.conv3 = nn.Conv2d(128, 128, kernel_size=3, padding=1)
         self.adaptive_pool = nn.AdaptiveAvgPool2d((16, 16))
-        self.fc1 = nn.Linear(128 * 16 * 16, 256)  # Updated dimensions after pooling layers
+        self.fc1 = nn.Linear(128 * 16 * 16, 256)
         self.fc2 = nn.Linear(256, 512)
 
     def forward_once(self, x):

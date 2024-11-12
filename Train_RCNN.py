@@ -81,7 +81,7 @@ class MOTSDataset(Dataset):
         image_num = list(self.data.keys())[idx]
         annotations = self.data[image_num]
 
-        img_path = os.path.join(self.img_dir, f'{image_num:06d}.jpg')  # Adjust filename pattern if necessary
+        img_path = os.path.join(self.img_dir, f'{image_num:06d}.jpg')
         image = Image.open(img_path)#.convert("RGB")
     
         # Convert boxes and labels to tensors
@@ -132,8 +132,8 @@ def collate_fn(batch):
 
 
 # Initialize the dataset and dataloader
-img_dir = r'C:\Users\wbott\Downloads\MOTS\MOTS\train\MOTS20-02\img1'  # Update with the correct path
-gt_file = r'C:\Users\wbott\Downloads\MOTS\MOTS\train\MOTS20-02\gt\gt.txt'  # Update with the correct path
+img_dir = r'..\MOTS\train\MOTS20-02\img1'  # Update with the correct path
+gt_file = r'..\MOTS\train\MOTS20-02\gt\gt.txt'  # Update with the correct path
 transform = transforms.Compose([
     # transforms.Resize((1080, 1920)),  # Adjust size if necessary
     transforms.ToTensor()
